@@ -7,15 +7,33 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f0f4f8;
-      color: #333;
+      background-color: #e38fbc;
+      color: #000000;
       text-align: center;
       padding: 50px;
       margin: 0;
     }
+
+    /* Enlarged Animated Title with Improved Fading Colors */
     h1 {
       margin-bottom: 20px;
+      font-size: 60px; /* Enlarged font size */
+      color: white;
+      position: relative;
+      display: inline-block;
+      padding: 20px;
+      animation: fadeColor 5s infinite; /* Color change animation */
     }
+
+    @keyframes fadeColor {
+      0%, 100% {
+        color: #080808; /* Light pink */
+      }
+      50% {
+        color: #640032; /* Slightly darker pink */
+      }
+    }
+
     button {
       padding: 10px 20px;
       font-size: 18px;
@@ -27,10 +45,12 @@
       transition: background-color 0.3s;
       margin-top: 20px;
     }
+
     button:hover {
       background-color: #45a049;
     }
-    #output, #moodFeedback, #affirmationBox {
+
+    #output, #moodFeedback, #affirmationBox, #suggestionsList {
       margin-top: 20px;
       font-size: 20px;
       min-height: 50px; /* Maintain space for output */
@@ -40,19 +60,24 @@
       background-color: #fff;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
+
     #moodSelector {
       margin-top: 20px;
     }
-    #muteButton {
-      margin-top: 10px;
-    }
+
     #moodFeedback {
-      background-color: #e7f3fe; /* Light blue background for mood feedback */
-      border-color: #b3d4fc; /* Light blue border for mood feedback */
+      background-color: #e7f3fe;
+      border-color: #b3d4fc;
     }
+
     #affirmationBox {
-      background-color: #e0f7fa; /* Light cyan background for affirmations */
-      border-color: #80deea; /* Light cyan border for affirmations */
+      background-color: #e0f7fa;
+      border-color: #80deea;
+    }
+
+    #suggestionsList {
+      display: none; /* Initially hide suggestions */
+      text-align: left;
     }
   </style>
 </head>
@@ -74,11 +99,22 @@
       <option value="😌">😌 Relaxed</option>
       <option value="😴">😴 Tired</option>
     </select>
+    
+    <!-- Satisfaction Dropdown -->
+    <label for="satisfaction">Satisfaction:</label>
+    <select id="satisfaction">
+      <option value="satisfied">Satisfied</option>
+      <option value="not-satisfied">Not Satisfied</option>
+    </select>
+    
     <button id="submitMood">Submit Mood</button>
   </div>
 
   <!-- Mood Feedback Box -->
   <div id="moodFeedback"></div>
+
+  <!-- Suggestions List -->
+  <div id="suggestionsList"></div>
 
   <!-- Daily Affirmation Box -->
   <div id="affirmationBox"></div>
@@ -97,9 +133,11 @@
     const muteButton = document.getElementById('muteButton');
     const output = document.getElementById('output');
     const moodSelector = document.getElementById('mood');
+    const satisfactionDropdown = document.getElementById('satisfaction');
     const submitMoodButton = document.getElementById('submitMood');
     const moodFeedback = document.getElementById('moodFeedback');
     const affirmationBox = document.getElementById('affirmationBox');
+    const suggestionsList = document.getElementById('suggestionsList');
     const nextAffirmationButton = document.getElementById('nextAffirmation');
     const saveAffirmationButton = document.getElementById('saveAffirmation');
 
@@ -120,7 +158,6 @@
         console.error("Error playing music:", error);
       });
       displayAffirmation(currentAffirmationIndex);
-      displayRandomAffirmation();
     };
 
     // Mute or unmute the music when the button is pressed
@@ -137,30 +174,24 @@
     // Check for browser compatibility
     if (!('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
       output.textContent = "Speech recognition not supported in this browser.";
-      document.getElementById('start').disabled = true; // Disable the button if not supported
+      document.getElementById('start').disabled = true;
     } else {
-      // Create a new instance of SpeechRecognition
       const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
 
       recognition.lang = 'en-US';
       recognition.interimResults = false;
 
-      // Start listening when the button is pressed
       document.getElementById('start').addEventListener('click', () => {
         output.textContent = "Listening...";
         recognition.start();
       });
 
-      // Handle the results of the voice recognition
       recognition.onresult = (event) => {
         const speech = event.results[0][0].transcript.toLowerCase();
         output.textContent = `You said: "${speech}"`;
-        
-        // Respond based on user input
         respondToInput(speech);
       };
 
-      // Error handling for microphone access and other issues
       recognition.onerror = (event) => {
         switch (event.error) {
           case 'no-speech':
@@ -180,12 +211,6 @@
         }
       };
 
-      // Event when recognition ends
-      recognition.onend = () => {
-        // No message about stopping listening
-      };
-
-      // Function to respond to specific feelings or phrases
       function respondToInput(input) {
         let response = "";
 
@@ -206,7 +231,6 @@
         output.textContent += `\n${response}`;
       }
 
-      // Mood selector functionality
       submitMoodButton.addEventListener('click', () => {
         const mood = moodSelector.value;
         if (mood) {
@@ -214,54 +238,81 @@
 
           switch (mood) {
             case "😊":
-              moodResponse = "You are radiating positivity! Keep spreading those good vibes!";
+              moodResponse = "You are radiating positivity! Keep spreading those good vibes! :)";
               break;
             case "😢":
-              moodResponse = "It's okay to feel sad sometimes. Remember, it's just one part of your journey.";
+              moodResponse = "It's okay to feel sad sometimes. Remember, it's just one part of your journey. <3";
               break;
             case "😟":
               moodResponse = "Anxiety can be overwhelming. Consider practicing mindfulness or talking it out with someone.";
               break;
             case "😠":
-              moodResponse = "Anger is a natural emotion. Find a healthy way to express it, like talking or writing.";
+              moodResponse = "Anger is a natural emotion. Find healthy outlets to express and process it.";
               break;
             case "😌":
-              moodResponse = "Feeling relaxed? That's great! Take a moment to enjoy this calm.";
+              moodResponse = "Feeling relaxed is a great state to be in. Maintain this peace!";
               break;
             case "😴":
-              moodResponse = "Feeling tired is normal. Ensure you're getting enough rest and self-care.";
+              moodResponse = "Feeling tired? Maybe it's time for a break or a power nap!";
               break;
             default:
-              moodResponse = "Thank you for sharing your mood.";
+              moodResponse = "";
           }
 
           moodFeedback.textContent = moodResponse;
+
+          // Handle suggestions based on satisfaction
+          let notSatisfiedResponse = "";
+          if (satisfactionDropdown.value === "not-satisfied") {
+            switch (mood) {
+              case "😊":
+                notSatisfiedResponse = "Suggestions to help:\n- Share your happiness with friends.\n- Engage in activities that make you smile.";
+                break;
+              case "😢":
+                notSatisfiedResponse = "Suggestions to help:\n- Talk to a friend or family member.\n- Write in a journal about your feelings.";
+                break;
+              case "😟":
+                notSatisfiedResponse = "Suggestions to help:\n- Practice mindfulness or meditation.\n- Identify triggers and develop coping strategies.";
+                break;
+              case "😠":
+                notSatisfiedResponse = "Suggestions to help:\n- Find healthy ways to express anger like exercise or art.\n- Talk about your feelings with someone you trust.";
+                break;
+              case "😌":
+                notSatisfiedResponse = "Suggestions to help:\n- Maintain this state with deep breathing.\n- Keep practicing relaxation techniques.";
+                break;
+              case "😴":
+                notSatisfiedResponse = "Suggestions to help:\n- Ensure you are getting enough rest.\n- Consider adjusting your routine for better sleep.";
+                break;
+              default:
+                notSatisfiedResponse = "";
+            }
+
+            suggestionsList.innerHTML = `<ul>${notSatisfiedResponse.split('\n').map(item => `<li>${item}</li>`).join('')}</ul>`;
+            suggestionsList.style.display = 'block'; // Show suggestions
+          } else {
+            suggestionsList.style.display = 'none'; // Hide suggestions
+          }
         } else {
-          moodFeedback.textContent = "Please select a mood.";
+          moodFeedback.textContent = "Please select a mood!";
         }
+      });
+
+      // Display the next affirmation
+      nextAffirmationButton.addEventListener('click', () => {
+        currentAffirmationIndex = (currentAffirmationIndex + 1) % affirmations.length;
+        displayAffirmation(currentAffirmationIndex);
+      });
+
+      // Save affirmation (for demonstration purposes)
+      saveAffirmationButton.addEventListener('click', () => {
+        alert(`Saved affirmation: "${affirmations[currentAffirmationIndex]}"`);
       });
     }
 
-    // Display affirmation based on the current index
+    // Function to display an affirmation
     function displayAffirmation(index) {
       affirmationBox.textContent = affirmations[index];
     }
-
-    // Next affirmation button functionality
-    nextAffirmationButton.addEventListener('click', () => {
-      currentAffirmationIndex = (currentAffirmationIndex + 1) % affirmations.length; // Loop back to start
-      displayAffirmation(currentAffirmationIndex);
-    });
-
-    // Save affirmation functionality
-    saveAffirmationButton.addEventListener('click', () => {
-      const selectedAffirmation = affirmations[currentAffirmationIndex];
-      alert(`Saved Affirmation: "${selectedAffirmation}"`);
-      // You could implement saving to local storage or a database here.
-    });
-
-    // Display the first affirmation on load
-    displayAffirmation(currentAffirmationIndex);
   </script>
 </body>
 </html>
